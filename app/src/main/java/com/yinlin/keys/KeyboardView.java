@@ -76,11 +76,17 @@ public class KeyboardView extends View {
     private final Paint pLine = new Paint();
     private final TextPaint pSug = new TextPaint(Paint.ANTI_ALIAS_FLAG);
     private final RectF tmp = new RectF();
+    private final Paint pBg = new Paint(Paint.FILTER_BITMAP_FLAG);
 
     private final ArrayList<ArrayList<Key>> rows = new ArrayList<>();
     private final ArrayList<ArrayList<String>> emo = new ArrayList<>();
     private ArrayList<String> recCache;
     private final String[] sugs = new String[3];
+    private final String[] sugCache = new String[3];
+    private final String[] sugTextCache = new String[3];
+    private final boolean[] sugClipCache = new boolean[3];
+    private final Drawable[] barIcs = new Drawable[4];
+    private final String[] barLb = {"Emoji", "Tempel", "Salin", "Hapus"};
 
     private int mode = M_LET, tab = 1, scrollY = 0, gridPid = -1;
     private boolean shift, caps, repeating;
@@ -130,6 +136,7 @@ public class KeyboardView extends View {
         icClip = ic(R.drawable.ic_clip);
         icCopy = ic(R.drawable.ic_copy);
         icTrash = ic(R.drawable.ic_trash);
+        barIcs[0] = icSmile; barIcs[1] = icClip; barIcs[2] = icCopy; barIcs[3] = icTrash;
         icClock = ic(R.drawable.ic_clock);
         icThumb = ic(R.drawable.ic_thumb);
         icHeart = ic(R.drawable.ic_heart);
@@ -209,9 +216,11 @@ public class KeyboardView extends View {
         }
         stopRepeat();
         handler.removeCallbacks(longRun);
+        handler.removeCallbacks(delRun);
         longKey = null;
         popKey = null;
         popText = null;
+        if (bgBmp != null) { bgBmp.recycle(); bgBmp = null; }
         gridPid = -1;
         invalidate();
     }
@@ -390,8 +399,8 @@ public class KeyboardView extends View {
             float s = Math.max(w / (float) src.getWidth(), h / (float) src.getHeight());
             float dw = src.getWidth() * s, dh = src.getHeight() * s;
             float l = (w - dw) / 2f, t = (h - dh) * 0.25f;
-            Paint p = new Paint(Paint.FILTER_BITMAP_FLAG);
-            c.drawBitmap(src, null, new RectF(l, t, l + dw, t + dh), p);
+            tmp.set(l, t, l + dw, t + dh);
+            c.drawBitmap(src, null, tmp, pBg);
             c.drawColor(Color.argb(P.dim() * 255 / 100, 0, 0, 0));
             bgBmp = out;
         } catch (Throwable t) {
@@ -461,18 +470,16 @@ public class KeyboardView extends View {
     private void drawBars(Canvas c, int w) {
         pBar.setColor(Color.argb(60, 0, 0, 0));
         c.drawRect(0, 0, w, tbH + sgH, pBar);
-        Drawable[] ics = {icSmile, icClip, icCopy, icTrash};
-        String[] lb = {"Emoji", "Tempel", "Salin", "Hapus"};
         float cw = w / 4f, is = tbH * 0.5f, cy = tbH / 2f;
         pLabel.setTextSize(tbH * 0.34f);
         for (int i = 0; i < 4; i++) {
             int col = (i == 0 && mode == M_EMO) ? cAcc : cText;
             pLabel.setColor(col);
-            float tw = pLabel.measureText(lb[i]);
+            float tw = pLabel.measureText(barLb[i]);
             float gw = is + dp(5) + tw;
             float x = i * cw + (cw - gw) / 2f;
-            drawIcon(c, ics[i], x + is / 2f, cy, is, col);
-            c.drawText(lb[i], x + is + dp(5), cy - (pLabel.ascent() + pLabel.descent()) / 2f, pLabel);
+            drawIcon(c, barIcs[i], x + is / 2f, cy, is, col);
+            c.drawText(barLb[i], x + is + dp(5), cy - (pLabel.ascent() + pLabel.descent()) / 2f, pLabel);
         }
         if (sgH > 0) {
             pLine.setColor(withAlpha(cText, 50));
@@ -486,9 +493,15 @@ public class KeyboardView extends View {
                 String s = sugs[i];
                 if (s == null) continue;
                 boolean clip = s.length() > 0 && s.charAt(0) == CLIP;
-                String t = (clip ? s.substring(1) : s).replace('\n', ' ');
-                float maxW = slot - dp(16) - (clip ? si + dp(4) : 0);
-                t = TextUtils.ellipsize(t, pSug, maxW, TextUtils.TruncateAt.END).toString();
+                String t;
+                if (s.equals(sugCache[i]) && clip == sugClipCache[i]) {
+                    t = sugTextCache[i];
+                } else {
+                    t = (clip ? s.substring(1) : s).replace('\n', ' ');
+                    float maxW = slot - dp(16) - (clip ? si + dp(4) : 0);
+                    t = TextUtils.ellipsize(t, pSug, maxW, TextUtils.TruncateAt.END).toString();
+                    sugCache[i] = s; sugClipCache[i] = clip; sugTextCache[i] = t;
+                }
                 float tw = pSug.measureText(t);
                 float gw = tw + (clip ? si + dp(4) : 0);
                 float x = i * slot + (slot - gw) / 2f;

@@ -47,7 +47,7 @@ public class KeyboardView extends View {
     static final int[] EMO_IDS = {R.string.emo1, R.string.emo2, R.string.emo3, R.string.emo4, R.string.emo5, R.string.emo6};
 
     static final class Key {
-        String label, alt;
+        String label, alt, u;
         int type, tab;
         float w;
         final RectF r = new RectF();
@@ -91,6 +91,7 @@ public class KeyboardView extends View {
     private int mode = M_LET, tab = 1, scrollY = 0, gridPid = -1;
     private boolean shift, caps, repeating;
     private long lastShift;
+    private boolean upDirty = true;
 
     private int cBg, cKey, cKey2, cText, cAcc, cAccT, ka = 255;
     private int keyH, gap, tbH, sgH, nRows, padB, totalH, kbW, kbX0, gridTop, gridH;
@@ -209,6 +210,15 @@ public class KeyboardView extends View {
         invalidate();
     }
 
+    private void refreshUp() {
+        boolean up = (shift || caps) && mode == M_LET;
+        for (int i = 0; i < pk.length; i++) {
+            Key k = pk[i];
+            if (k != null) k.u = up ? (k.label == null ? null : k.label.toUpperCase()) : k.label;
+        }
+        upDirty = false;
+    }
+
     public void cancelAll() {
         for (int i = 0; i < pk.length; i++) {
             pk[i] = null;
@@ -221,6 +231,10 @@ public class KeyboardView extends View {
         popKey = null;
         popText = null;
         gridPid = -1;
+        lastShift = 0;
+        shift = false;
+        caps = false;
+        upDirty = true;
         invalidate();
     }
 
@@ -356,12 +370,16 @@ public class KeyboardView extends View {
         return s;
     }
 
+    private void dropBg() {
+        if (bgBmp != null) { bgBmp.recycle(); bgBmp = null; }
+    }
+
     private void doBuildBg() {
         int w = getWidth(), h = getHeight();
         if (w <= 0 || h <= 0) return;
         int m = P.bg();
         if (m == 3) {
-            bgBmp = null;
+            dropBg();
             bgSig = "3";
             return;
         }
@@ -390,7 +408,7 @@ public class KeyboardView extends View {
             src = null;
         }
         if (src == null) {
-            bgBmp = null;
+            dropBg();
             return;
         }
         try {
@@ -402,9 +420,10 @@ public class KeyboardView extends View {
             tmp.set(l, t, l + dw, t + dh);
             c.drawBitmap(src, null, tmp, pBg);
             c.drawColor(Color.argb(P.dim() * 255 / 100, 0, 0, 0));
+            dropBg();
             bgBmp = out;
         } catch (Throwable t) {
-            bgBmp = null;
+            dropBg();
         }
         src.recycle();
     }
@@ -530,8 +549,8 @@ public class KeyboardView extends View {
         int fg = acc ? cAccT : cText;
         switch (k.type) {
             case T_CHAR: {
-                String s = k.label;
-                if ((shift || caps) && mode == M_LET) s = s.toUpperCase();
+                if (upDirty) refreshUp();
+                String s = k.u != null ? k.u : k.label;
                 drawText(c, s, cx, cy, keyH * 0.40f, fg, 255);
                 if (k.alt != null && fHint && !pr) {
                     pHint.setTextSize(keyH * 0.22f);
@@ -567,8 +586,8 @@ public class KeyboardView extends View {
 
     private void drawPop(Canvas c) {
         if (!fPopup || popKey == null || mode == M_EMO) return;
-        String s = popText != null ? popText : popKey.label;
-        if (popText == null && (shift || caps) && mode == M_LET) s = s.toUpperCase();
+        if (upDirty) refreshUp();
+        String s = popText != null ? popText : (popKey != null && popKey.u != null ? popKey.u : popKey != null ? popKey.label : null);
         RectF r = popKey.r;
         float bw = Math.max(r.width() * 1.3f, keyH * 0.95f), bh = keyH * 1.1f;
         float l = r.centerX() - bw / 2f;
@@ -856,6 +875,7 @@ public class KeyboardView extends View {
             shift = !shift;
         }
         lastShift = now;
+        upDirty = true;
     }
 
     private final Runnable longRun = new Runnable() {

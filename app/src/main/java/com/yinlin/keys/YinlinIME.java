@@ -55,6 +55,7 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
             if (cm != null) cm.removePrimaryClipChangedListener(clipListener);
         } catch (Throwable ignored) {
         }
+        h.removeCallbacks(sugRun);
         super.onDestroy();
     }
 

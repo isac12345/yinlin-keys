@@ -281,6 +281,7 @@ public class KeyboardView extends View {
 
     private void buildKeys() {
         rows.clear();
+        upDirty = true;
         boolean nums = P.nums();
         if (mode == M_EMO) {
             ArrayList<Key> t = new ArrayList<>();

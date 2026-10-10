@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="emo1" translatable="false">😀 😁 😂 🤣 😊 😇 🙂 😉 😍 🥰 😘 😋 😜 🤪 🤔 🫡 🫠 🥹 😎 🤩 🥳 😏 😒 😔 😢 😭 😤 😡 🤯 😱 🥺 😴 🤤 🤮 🤒 😷 🤫 🫢 🫣 🙄 😬 🥴 🫨 😈 💀 👻 🤡</string>
+    <string name="emo2" translatable="false">👍 👎 👌 🤌 🤏 ✌️ 🤞 🫰 🤟 🤘 🤙 👈 👉 👆 👇 ☝️ 🫵 👋 🤚 🖐️ ✋ 🖖 🫱 🫲 🫳 🫴 👏 🙌 🫶 👐 🤲 🤝 🙏 💪 🦾 ✍️ 🫷 🫸</string>
+    <string name="emo3" translatable="false">❤️ 🧡 💛 💚 💙 💜 🖤 🤍 🤎 🩷 🩵 🩶 💔 💕 💞 💓 💗 💖 💘 💝 💟 ✨ 🔥 💫 ⭐ 🌟 💥 💢 💯 🎉 🎊 🎁 🏆 🎮 🎧 🎵 🎶</string>
+    <string name="emo4" translatable="false">🐶 🐱 🐭 🐹 🐰 🦊 🐻 🐼 🐨 🐯 🦁 🐮 🐷 🐸 🐵 🙈 🙉 🙊 🐔 🐧 🐦 🦆 🦉 🦇 🐺 🐴 🦄 🐝 🦋 🐞 🐢 🐍 🐙 🦈 🐬 🐳 🦖 🐉 🫎 🪿</string>
+    <string name="emo5" translatable="false">🍎 🍊 🍋 🍌 🍉 🍇 🍓 🫐 🍒 🥭 🍍 🥥 🥑 🍅 🌶️ 🌽 🥕 🍞 🧀 🍳 🥞 🍗 🍔 🍟 🍕 🌭 🌮 🍜 🍝 🍣 🍙 🍚 🍢 🍡 🍦 🍩 🍪 🎂 ☕ 🧋 🥤</string>
+    <string name="emo6" translatable="false">⚽ 🏀 🏐 🎯 🎲 ♟️ 🚗 🏍️ 🚀 ✈️ 🏠 📱 💻 ⌨️ 🖱️ 📷 🔋 💡 📚 ✏️ 📌 🔒 🔑 💰 ⏰ 🌙 ☀️ ⛅ 🌧️ ⚡ 🌈 🌸 🌹 🌴 🍀 🏁 🚩</string>
+</resources>

@@ -220,7 +220,6 @@ public class KeyboardView extends View {
         longKey = null;
         popKey = null;
         popText = null;
-        if (bgBmp != null) { bgBmp.recycle(); bgBmp = null; }
         gridPid = -1;
         invalidate();
     }
@@ -251,6 +250,7 @@ public class KeyboardView extends View {
         super.onSizeChanged(w, h, ow, oh);
         layoutKeys();
         buildBg();
+        for (int i = 0; i < 3; i++) sugCache[i] = null;
     }
 
     private ArrayList<Key> chars(String s, String alts) {
@@ -909,5 +909,7 @@ public class KeyboardView extends View {
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         cancelAll();
+        if (bgBmp != null) { bgBmp.recycle(); bgBmp = null; }
+        bgSig = null;
     }
 }

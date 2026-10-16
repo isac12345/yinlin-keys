@@ -37,7 +37,7 @@ public class KeyboardView extends View {
         void onDelete();
         void onEnter();
         void onCursor(int dir);
-        void onToolbar(int i); // 1 tempel, 2 salin, 3 hapus semua
+        void onToolbar(int i); // 1 tempel, 2 salin, 3 hapus semua, 4 batal (undo)
         void onSuggestion(String s);
     }
 
@@ -85,8 +85,8 @@ public class KeyboardView extends View {
     private final String[] sugCache = new String[3];
     private final String[] sugTextCache = new String[3];
     private final boolean[] sugClipCache = new boolean[3];
-    private final Drawable[] barIcs = new Drawable[4];
-    private final String[] barLb = {"Emoji", "Tempel", "Salin", "Hapus"};
+    private final Drawable[] barIcs = new Drawable[5];
+    private final String[] barLb = {"Emoji", "Tempel", "Salin", "Hapus", "Batal"};
 
     private int mode = M_LET, tab = 1, scrollY = 0, gridPid = -1;
     private boolean shift, caps, repeating;
@@ -137,7 +137,7 @@ public class KeyboardView extends View {
         icClip = ic(R.drawable.ic_clip);
         icCopy = ic(R.drawable.ic_copy);
         icTrash = ic(R.drawable.ic_trash);
-        barIcs[0] = icSmile; barIcs[1] = icClip; barIcs[2] = icCopy; barIcs[3] = icTrash;
+        barIcs[0] = icSmile; barIcs[1] = icClip; barIcs[2] = icCopy; barIcs[3] = icTrash; barIcs[4] = icBksp;
         icClock = ic(R.drawable.ic_clock);
         icThumb = ic(R.drawable.ic_thumb);
         icHeart = ic(R.drawable.ic_heart);
@@ -490,9 +490,9 @@ public class KeyboardView extends View {
     private void drawBars(Canvas c, int w) {
         pBar.setColor(Color.argb(60, 0, 0, 0));
         c.drawRect(0, 0, w, tbH + sgH, pBar);
-        float cw = w / 4f, is = tbH * 0.5f, cy = tbH / 2f;
+        float cw = w / barLb.length, is = tbH * 0.5f, cy = tbH / 2f;
         pLabel.setTextSize(tbH * 0.34f);
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < barLb.length; i++) {
             int col = (i == 0 && mode == M_EMO) ? cAcc : cText;
             pLabel.setColor(col);
             float tw = pLabel.measureText(barLb[i]);
@@ -733,7 +733,7 @@ public class KeyboardView extends View {
         zone[id] = 0;
         int w = getWidth();
         if (y < tbH) {
-            int i = Math.min(3, (int) (x * 4 / w));
+            int i = Math.min(barLb.length - 1, (int) (x * barLb.length / w));
             feedback();
             if (i == 0) setMode(mode == M_EMO ? M_LET : M_EMO);
             else if (L != null) L.onToolbar(i);

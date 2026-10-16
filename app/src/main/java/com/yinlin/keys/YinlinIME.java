@@ -21,6 +21,13 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
     private int inputType, imeOpts;
     private boolean pw;
     private String clip = "", lastPasted = "";
+    // papan salin: 20 item terakhir yang dicOPY dari keyboard ini (dipakai user, bukan bocor ke luar)
+    private static final int CLIP_N = 20;
+    private final String[] clipHist = new String[CLIP_N];
+    private int clipLen, clipNext;
+    // undo: teks yang diketik sejak tombol Batal terakhir (maks 200 huruf)
+    private final StringBuilder undoBuf = new StringBuilder(200);
+    private static final int UNDO_MAX = 200;
 
     private final Runnable sugRun = new Runnable() {
         @Override
@@ -110,6 +117,8 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
         InputConnection ic = getCurrentInputConnection();
         if (ic == null || s == null || s.isEmpty()) return;
         ic.commitText(s, 1);
+        // catat buat tombol Batal (maks 200 huruf supaya RAM kecil)
+        for (int i = 0; i < s.length() && undoBuf.length() < UNDO_MAX; i++) undoBuf.append(s.charAt(i));
         char c = s.charAt(0);
         if (c == ' ' || c == '\n') updateCaps();
         postSug();
@@ -117,7 +126,24 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
 
     @Override
     public void onDelete() {
+        if (undoBuf.length() > 0) undoBuf.setLength(undoBuf.length() - 1);
         sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
+        updateCaps();
+        postSug();
+    }
+
+    /** Batal: hapus semua yang diketik sejak tombol Batal terakhir. */
+    private void doUndo() {
+        if (undoBuf.length() == 0) {
+            toast("Tidak ada yang perlu dibatalkan");
+            return;
+        }
+        InputConnection ic = getCurrentInputConnection();
+        if (ic == null) return;
+        ic.beginBatchEdit();
+        for (int i = 0; i < undoBuf.length(); i++) sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
+        ic.endBatchEdit();
+        undoBuf.setLength(0);
         updateCaps();
         postSug();
     }
@@ -172,6 +198,7 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
             }
             try {
                 cm.setPrimaryClip(ClipData.newPlainText("Yinlin Keys", t));
+                pushClip(t);
                 toast("Teks disalin");
             } catch (Throwable e) {
                 toast("Gagal menyalin");
@@ -182,8 +209,11 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
             ic.beginBatchEdit();
             ic.deleteSurroundingText(b == null ? 0 : b.length(), a == null ? 0 : a.length());
             ic.endBatchEdit();
+            undoBuf.setLength(0);
             updateCaps();
             postSug();
+        } else if (i == 4) {
+            doUndo();
         }
     }
 
@@ -212,6 +242,29 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
 
     private void toast(String s) {
         Toast.makeText(this, s, Toast.LENGTH_SHORT).show();
+    }
+
+    // ------------------------------------------------------------ papan salin
+
+    /** Tambah teks ke papan salin internal (maks 20, yang lama dibuang). */
+    private void pushClip(String t) {
+        if (t == null || t.isEmpty()) return;
+        for (int i = 0; i < clipLen; i++) {
+            if (t.equals(clipHist[i])) { // jangan dobel
+                clipHist[i] = clipHist[clipNext];
+                clipHist[clipNext] = t;
+                return;
+            }
+        }
+        clipHist[clipNext] = t;
+        clipNext = (clipNext + 1) % CLIP_N;
+        if (clipLen < CLIP_N) clipLen++;
+    }
+
+    /** Ambil teks ke-i dari papan salin (0 = terbaru). */
+    private String getClip(int i) {
+        if (i < 0 || i >= clipLen) return null;
+        return clipHist[(clipNext - 1 - i + CLIP_N * 2) % CLIP_N];
     }
 
     private void readClip() {
@@ -270,6 +323,11 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
             } else {
                 Dict.fill(w.toLowerCase(), out, n);
             }
+        }
+        // papan salin: kalau sisa slot, isi dengan riwayat copy (terbaru dulu)
+        for (int i = 0; n < out.length && i < clipLen; i++) {
+            String c = getClip(i);
+            if (c != null && !c.equals(lastPasted)) out[n++] = KeyboardView.CLIP + c;
         }
         kv.setSuggestions(out);
     }

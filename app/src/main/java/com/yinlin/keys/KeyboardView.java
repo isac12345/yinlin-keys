@@ -12,6 +12,8 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
+import android.media.ToneGenerator;
+import android.provider.Settings;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
@@ -914,16 +916,34 @@ public class KeyboardView extends View {
         handler.removeCallbacks(delRun);
     }
 
+    private ToneGenerator tone;
+
     @SuppressWarnings("deprecation")
     private void feedback() {
         if (fHaptic && vib != null) {
-            if (Build.VERSION.SDK_INT >= 26) {
-                vib.vibrate(VibrationEffect.createOneShot(fVib, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                vib.vibrate(fVib);
+            try {
+                if (Build.VERSION.SDK_INT >= 26) {
+                    vib.vibrate(VibrationEffect.createOneShot(fVib, VibrationEffect.DEFAULT_AMPLITUDE));
+                } else {
+                    vib.vibrate(fVib);
+                }
+            } catch (Throwable ignored) {
             }
         }
-        if (fSound && am != null) am.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD);
+        if (!fSound || am == null) return;
+        try {
+            // HP yang matikan "suara sentuhan" bikin playSoundEffect bisu total,
+            // jadi bunyikan sendiri lewat ToneGenerator.
+            int sys = Settings.System.getInt(getContext().getContentResolver(),
+                    Settings.System.SOUND_EFFECTS_ENABLED, 1);
+            if (sys == 1) {
+                am.playSoundEffect(AudioManager.FX_KEYPRESS_STANDARD);
+            } else {
+                if (tone == null) tone = new ToneGenerator(AudioManager.STREAM_MUSIC, 60);
+                tone.startTone(ToneGenerator.TONE_PROP_BEEP, 40);
+            }
+        } catch (Throwable ignored) {
+        }
     }
 
     @Override

@@ -40,7 +40,7 @@ final class Prefs {
     /** 0 mati, 1 kiri, 2 kanan */
     int one() { return cl(sp.getInt("one", 0), 0, 2); }
     int longMs() { return cl(sp.getInt("lp", 380), 200, 700); }
-    int vibMs() { return cl(sp.getInt("vi", 12), 4, 40); }
+    int vibMs() { return cl(sp.getInt("vi", 20), 4, 40); }
 
     boolean nums() { return sp.getBoolean("nums", true); }
     boolean haptic() { return sp.getBoolean("haptic", true); }

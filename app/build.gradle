@@ -14,12 +14,22 @@ android {
         versionName '1.0'
     }
 
+    signingConfigs {
+        release {
+            storeFile file("keystore.jks")
+            storePassword System.getenv("KEYSTORE_PASSWORD")
+            keyAlias System.getenv("KEY_ALIAS")
+            keyPassword System.getenv("KEY_PASSWORD")
+        }
+    }
+
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.debug
+            // CI: kunci rilis dari brankas; lokal: debug key
+            signingConfig System.getenv("KEYSTORE_PASSWORD") != null ? signingConfigs.release : signingConfigs.debug
         }
     }
 
@@ -33,4 +43,9 @@ android {
         abortOnError false
         checkReleaseBuilds false
     }
+}
+
+dependencies {
+    // Hanya untuk ujian (tidak masuk APK): JUnit4
+    testImplementation 'junit:junit:4.13.2'
 }

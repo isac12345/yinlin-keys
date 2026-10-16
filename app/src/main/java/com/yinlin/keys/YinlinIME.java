@@ -132,18 +132,23 @@ public class YinlinIME extends InputMethodService implements KeyboardView.Listen
         postSug();
     }
 
-    /** Batal: hapus semua yang diketik sejak tombol Batal terakhir. */
+    /** Batal: hapus 1 kata terakhir (sampai spasi). Pencet lagi = kata sebelumnya. */
     private void doUndo() {
-        if (undoBuf.length() == 0) {
+        int n = undoBuf.length();
+        if (n == 0) {
             toast("Tidak ada yang perlu dibatalkan");
             return;
         }
         InputConnection ic = getCurrentInputConnection();
         if (ic == null) return;
+        int i = n;
+        while (i > 0 && undoBuf.charAt(i - 1) == ' ') i--; // lewati spasi ujung
+        while (i > 0 && undoBuf.charAt(i - 1) != ' ') i--; // mundur sampai spasi
+        int hapus = n - i;
         ic.beginBatchEdit();
-        for (int i = 0; i < undoBuf.length(); i++) sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
+        for (int k = 0; k < hapus; k++) sendDownUpKeyEvents(KeyEvent.KEYCODE_DEL);
         ic.endBatchEdit();
-        undoBuf.setLength(0);
+        undoBuf.setLength(i);
         updateCaps();
         postSug();
     }

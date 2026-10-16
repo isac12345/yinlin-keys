@@ -43,8 +43,8 @@ final class Prefs {
     int vibMs() { return cl(sp.getInt("vi", 12), 4, 40); }
 
     boolean nums() { return sp.getBoolean("nums", true); }
-    boolean haptic() { return sp.getBoolean("haptic", false); }
-    boolean sound() { return sp.getBoolean("sound", false); }
+    boolean haptic() { return sp.getBoolean("haptic", true); }
+    boolean sound() { return sp.getBoolean("sound", true); }
     boolean popup() { return sp.getBoolean("popup", true); }
     boolean sug() { return sp.getBoolean("sug", true); }
     boolean paste() { return sp.getBoolean("paste", true); }

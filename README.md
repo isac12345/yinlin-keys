@@ -9,7 +9,7 @@ Super light keyboard for Android. Pure Java, no libraries.
 
 **[Download APK](../../releases/latest)**
 
-Android 5+ · 161 KB · no ads · no internet
+Android 5+ - 161 KB - no ads - no internet
 
 </div>
 

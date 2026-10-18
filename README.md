@@ -27,3 +27,17 @@ Android 5+ · 161 KB · no ads · no internet
 1. Download the latest APK on the [Releases](../../releases) page.
 2. Open the APK file and allow installation from this source.
 3. Open Yinlin Keys, follow step 1 and 2 on the screen.
+
+## Privacy
+
+- No internet permission, so nothing typed here can leave the device.
+- Suggestions come from a built-in dictionary of about 250 words. Nothing you type is stored or learned.
+- The last 20 copied items are kept in memory while the keyboard runs, so you can paste them from the
+  suggestion bar. They are never written to disk and they are gone when the keyboard process ends.
+- There is no clear button for that clipboard history. To remove it, switch to another keyboard or
+  restart the app.
+
+## Limitations
+
+- One language, Indonesian layout. No swipe typing and no autocorrect yet.
+- Not tested on every device.
